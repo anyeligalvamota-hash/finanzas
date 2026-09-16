@@ -1,0 +1,31 @@
+name: Apply Finanza updates
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/apply_finanza_updates.py'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply requested UI updates
+        run: python .github/scripts/apply_finanza_updates.py
+      - name: Commit updated app
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Mejoras de presupuesto, gráficos y moneda de registro'
+          git push
+      - name: Validate
+        run: |
+          test -s index.html
+          grep -q 'finanza-requested-fixes' index.html
+          grep -q 'finanza-requested-js' index.html
+          grep -q 'function renderBudgetVsSpentChart' index.html
+          grep -q 'function renderDebtChart' index.html
+          grep -q 'function budget()' index.html
+          grep -q 'Moneda de preferencia' index.html
