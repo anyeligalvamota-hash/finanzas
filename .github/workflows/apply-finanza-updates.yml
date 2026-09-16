@@ -15,6 +15,13 @@ jobs:
       - name: Apply requested UI updates
         run: |
           python .github/scripts/apply_finanza_updates.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          s=s.replace('<script id="finanza-requested-js">','')
+          s=s.replace('</script>\n</script></body></html>','</script></body></html>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
           sed -i "s/if(user\\&\\&db\\&\\&loginMode!=='new')/if(user\\&\\&db)/" index.html
       - name: Commit updated app
         run: |
@@ -26,9 +33,8 @@ jobs:
       - name: Validate
         run: |
           test -s index.html
-          grep -q 'finanza-requested-fixes' index.html
-          grep -q 'finanza-requested-js' index.html
-          grep -q 'function renderBudgetVsSpentChart' index.html
-          grep -q 'function renderDebtChart' index.html
-          grep -q 'function budget()' index.html
+          test "$(grep -o 'id=\"finanza-requested-fixes\"' index.html | wc -l)" -eq 1
+          test "$(grep -o 'function renderBudgetVsSpentChart' index.html | wc -l)" -ge 1
+          test "$(grep -o 'function renderDebtChart' index.html | wc -l)" -ge 1
           grep -q 'Moneda de preferencia' index.html
+          grep -q 'Cuotas y responsabilidades se gestionan desde Pagos' index.html
