@@ -1,0 +1,7 @@
+{
+  "name": "finanza-tu-vida-en-equilibrio",
+  "version": "36.0.0",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "dependencies": { "@vercel/blob": "^2.6.1" }
+}
