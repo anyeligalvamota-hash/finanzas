@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/scripts/apply_finanza_updates.py'
       - '.github/workflows/apply-finanza-updates.yml'
+      - 'FINANZA_UPDATE_TRIGGER.txt'
 permissions:
   contents: write
 jobs:
