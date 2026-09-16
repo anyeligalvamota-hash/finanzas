@@ -21,9 +21,6 @@ jobs:
           p=Path('index.html'); s=p.read_text(encoding='utf-8')
           s=s.replace('<script id="finanza-requested-js">','')
           s=s.replace('</script>\n</script></body></html>','</script></body></html>',1)
-          if 'function budgetMoney(' not in s:
-              marker='/* Histórico de presupuesto:'
-              s=s.replace(marker,"function budgetMoney(n,c){try{return new Intl.NumberFormat(db?.language||'es',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}catch{return (Number(n)||0).toFixed(2)}}\\n"+marker,1)
           p.write_text(s,encoding='utf-8')
           PY
           sed -i "s/if(user\\&\\&db\\&\\&loginMode!=='new')/if(user\\&\\&db)/" index.html
@@ -38,8 +35,16 @@ jobs:
         run: |
           test -s index.html
           test "$(grep -o 'id=\"finanza-requested-fixes\"' index.html | wc -l)" -eq 1
-          grep -q 'function budgetMoney' index.html
-          grep -q 'function renderBudgetVsSpentChart' index.html
-          grep -q 'function renderDebtChart' index.html
+          test "$(grep -o 'function renderBudgetVsSpentChart' index.html | wc -l)" -ge 1
+          test "$(grep -o 'function renderDebtChart' index.html | wc -l)" -ge 1
           grep -q 'Moneda de preferencia' index.html
-          grep -q 'Las cuotas y responsabilidades se gestionan desde Pagos' index.html
+          grep -q 'Cuotas y responsabilidades se gestionan desde Pagos' index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/finanza-app.js').write_text('\n'.join(scripts),encoding='utf-8')
+          print('scripts extracted:',len(scripts))
+          PY
+          node --check /tmp/finanza-app.js
