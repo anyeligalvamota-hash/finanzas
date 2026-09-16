@@ -507,7 +507,8 @@ async function bootFinal(){ensurePersonalLogin();let sess=localStorage.getItem('
 try{let initial=normalizePage(history.state?.finanzaPage||decodeURIComponent((location.hash||'').replace(/^#/,'')||'Resumen'));page=initial;history.replaceState({finanzaPage:initial},'',location.pathname+'#'+encodeURIComponent(initial))}catch(e){} bootFinal();setTimeout(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})},1200);setTimeout(handleResetLink,350);window.addEventListener('online',()=>syncRemote(false));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user)syncRemote(false)});window.addEventListener('storage',e=>{if(user&&e.key===keyDb(user.username)&&e.newValue){try{db=ensureSchema(JSON.parse(e.newValue));render()}catch(_){}}});window.addEventListener('resize',()=>{if(page==='Resumen'){renderDashboardCharts();renderDebtChart()}});
 
 
-function budgetMoney(n,c){try{return new Intl.NumberFormat(db?.language||'es',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}catch{return (Number(n)||0).toFixed(2)}}\n/* Histórico de presupuesto: se conserva un snapshot mensual. Los meses sin snapshot muestran 0 asignado. */
+function budgetMoney(n,c){try{return new Intl.NumberFormat(db?.language||'es',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}catch{return (Number(n)||0).toFixed(2)}}
+/* Histórico de presupuesto: se conserva un snapshot mensual. Los meses sin snapshot muestran 0 asignado. */
 function finanzaMonthKey(offset){let d=new Date();d.setDate(1);d.setMonth(d.getMonth()+offset);return d.toISOString().slice(0,7)}
 function finanzaMonthLabel(key){let d=new Date(key+'-01T00:00:00');return d.toLocaleDateString(db?.language||'es',{month:'short'}).replace('.','')}
 function budgetMonthlySpent(cur,month){return (db.transactions||[]).filter(t=>(t.type==='Gasto'||t.type==='Pago de deuda')&&String(t.date||'').startsWith(month)).reduce((a,t)=>a+convert(t.amount,t.currency,cur),0)}
@@ -524,6 +525,8 @@ const __finanzaLoginScreen=loginScreen;window.loginScreen=function(){__finanzaLo
 const __finanzaCreateAccount=createAccount;window.createAccount=async function(){await __finanzaCreateAccount();if(user&&db){let c=document.getElementById('lg_currency')?.value||db.baseCurrency||'EUR';db.preferredCurrency=c;db.baseCurrency=c;db.budgetCurrency=c;db.expenseSummaryCurrency=c;db.profile.preferredCurrency=c;save()}}
 /* Guarda un snapshot al entrar a Presupuesto para que el mes actual quede registrado. */
 const __finanzaGo=go;window.go=function(p,push=true){__finanzaGo(p,push);if(normalizePage(p)==='Presupuesto'&&db){saveBudgetHistorySnapshot();localStorage.setItem(keyDb(user.username),JSON.stringify(db))}}
+
+
 
 
 
