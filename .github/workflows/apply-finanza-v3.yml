@@ -14,6 +14,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply V3 improvements
         run: python .github/scripts/apply_finanza_v3.py
+      - name: Stabilize V3 DOM hooks
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("const c=document.getElementById('content');if(!c)return;let w=document.getElementById('finanzaPaymentManagerV3');", "const c=document.getElementById('content');if(!c)return;const h=(c.innerText||'').toLowerCase();if(!h.includes('pagos'))return;let w=document.getElementById('finanzaPaymentManagerV3');")
+          s=s.replace("let old=document.getElementById('finanzaThemeCatalog');if(old)old.remove();const box=document.createElement('div');", "let old=document.getElementById('finanzaThemeCatalog');if(old){old.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('active',b.dataset.theme===(localStorage.getItem('finanzaThemeV3')||'Cocoa')));return}const box=document.createElement('div');")
+          s=s.replace("applyTheme(b.dataset.theme);themeCatalog()", "applyTheme(b.dataset.theme);box.querySelectorAll('[data-theme]').forEach(q=>q.classList.toggle('active',q.dataset.theme===b.dataset.theme));")
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Validate
         run: |
           test -s index.html
@@ -36,5 +47,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Aplicar diseño Cocoa y mejoras de presupuesto y pagos'
+          git diff --cached --quiet || git commit -m 'Aplicar diseño Cocoa y corregir interfaz de pagos'
           git push
