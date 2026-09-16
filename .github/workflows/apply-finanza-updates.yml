@@ -25,9 +25,13 @@ jobs:
           pos=[i for i in range(len(s)) if s.startswith(marker,i)]
           if len(pos)>1:
               s=s[:pos[1]]+'</script></body></html>'
+          bad='}'+chr(92)+'n/* Histórico de presupuesto: se conserva un snapshot mensual. Los meses sin snapshot muestran 0 asignado. */'
+          good='}'+chr(10)+marker
+          s=s.replace(bad,good,1)
           if 'function budgetMoney(' not in s:
               anchor='function finanzaMonthKey(offset)'
-              s=s.replace(anchor,"function budgetMoney(n,c){return money(n,c)}\n"+anchor,1)
+              insert='function budgetMoney(n,c){return money(n,c)}'+chr(10)
+              s=s.replace(anchor,insert+anchor,1)
           p.write_text(s,encoding='utf-8')
           print('historical blocks:',s.count(marker))
           print('budgetMoney:',s.count('function budgetMoney('))
@@ -38,7 +42,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Estabilizar presupuesto y evitar pantalla en blanco'
+          git diff --cached --quiet || git commit -m 'Corregir JavaScript y eliminar pantalla en blanco'
           git push
       - name: Validate
         run: |
