@@ -21,7 +21,12 @@ jobs:
           p=Path('index.html'); s=p.read_text(encoding='utf-8')
           s=s.replace('<script id="finanza-requested-js">','')
           s=s.replace('</script>\n</script></body></html>','</script></body></html>',1)
+          marker='/* Histórico de presupuesto: se conserva un snapshot mensual. Los meses sin snapshot muestran 0 asignado. */'
+          pos=[i for i in range(len(s)) if s.startswith(marker,i)]
+          if len(pos)>1:
+              s=s[:pos[1]]+'</script></body></html>'
           p.write_text(s,encoding='utf-8')
+          print('historical blocks:',s.count(marker))
           PY
           sed -i "s/if(user\\&\\&db\\&\\&loginMode!=='new')/if(user\\&\\&db)/" index.html
       - name: Commit updated app
@@ -29,7 +34,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Mejoras de presupuesto, gráficos y moneda de registro'
+          git diff --cached --quiet || git commit -m 'Corregir pantalla en blanco y deduplicar scripts'
           git push
       - name: Validate
         run: |
@@ -39,6 +44,7 @@ jobs:
           test "$(grep -o 'function renderDebtChart' index.html | wc -l)" -ge 1
           grep -q 'Moneda de preferencia' index.html
           grep -q 'Cuotas y responsabilidades se gestionan desde Pagos' index.html
+          test "$(grep -o 'const __finanzaLoginScreen=loginScreen' index.html | wc -l)" -eq 1
           python - <<'PY'
           import re
           from pathlib import Path
