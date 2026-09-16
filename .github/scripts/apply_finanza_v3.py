@@ -48,4 +48,3 @@ js = r'''<script id="finanza-v3-js">
 s = s.replace('</head>', css + '</head>', 1)
 s = s.replace('</body>', js + '</body>', 1)
 p.write_text(s, encoding='utf-8')
-PY
