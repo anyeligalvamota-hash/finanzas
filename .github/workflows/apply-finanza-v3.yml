@@ -1,0 +1,40 @@
+name: Apply Finanza V3 design
+on:
+  push:
+    paths:
+      - '.github/scripts/apply_finanza_v3.py'
+      - '.github/workflows/apply-finanza-v3.yml'
+      - 'FINANZA_V3_TRIGGER.txt'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V3 improvements
+        run: python .github/scripts/apply_finanza_v3.py
+      - name: Validate
+        run: |
+          test -s index.html
+          test "$(grep -o 'id=\"finanza-v3-css\"' index.html | wc -l)" -eq 1
+          test "$(grep -o 'id=\"finanza-v3-js\"' index.html | wc -l)" -eq 1
+          grep -q 'Responsabilidades y cuotas' index.html
+          grep -q 'finanzaDeletePaymentV3' index.html
+          grep -q 'Presupuesto total del mes' index.html
+          grep -q 'Paleta y tipografía' index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/finanza-app.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/finanza-app.js
+      - name: Commit updated app
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Aplicar diseño Cocoa y mejoras de presupuesto y pagos'
+          git push
