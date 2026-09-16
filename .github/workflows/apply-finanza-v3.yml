@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Repair generated script footer
+        run: sed -i '${/^PY$/d;}' .github/scripts/apply_finanza_v3.py
       - name: Apply V3 improvements
         run: python .github/scripts/apply_finanza_v3.py
       - name: Stabilize V3 DOM hooks
@@ -46,6 +48,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html
+          git add index.html .github/scripts/apply_finanza_v3.py
           git diff --cached --quiet || git commit -m 'Aplicar diseño Cocoa y corregir interfaz de pagos'
           git push
