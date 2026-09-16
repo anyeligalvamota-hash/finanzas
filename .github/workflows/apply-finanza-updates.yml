@@ -25,8 +25,12 @@ jobs:
           pos=[i for i in range(len(s)) if s.startswith(marker,i)]
           if len(pos)>1:
               s=s[:pos[1]]+'</script></body></html>'
+          if 'function budgetMoney(' not in s:
+              anchor='function finanzaMonthKey(offset)'
+              s=s.replace(anchor,"function budgetMoney(n,c){return money(n,c)}\\n"+anchor,1)
           p.write_text(s,encoding='utf-8')
           print('historical blocks:',s.count(marker))
+          print('budgetMoney:',s.count('function budgetMoney('))
           PY
           sed -i "s/if(user\\&\\&db\\&\\&loginMode!=='new')/if(user\\&\\&db)/" index.html
       - name: Commit updated app
@@ -34,7 +38,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git diff --cached --quiet || git commit -m 'Corregir pantalla en blanco y deduplicar scripts'
+          git diff --cached --quiet || git commit -m 'Estabilizar presupuesto y evitar pantalla en blanco'
           git push
       - name: Validate
         run: |
@@ -42,9 +46,10 @@ jobs:
           test "$(grep -o 'id=\"finanza-requested-fixes\"' index.html | wc -l)" -eq 1
           test "$(grep -o 'function renderBudgetVsSpentChart' index.html | wc -l)" -ge 1
           test "$(grep -o 'function renderDebtChart' index.html | wc -l)" -ge 1
+          test "$(grep -o 'function budgetMoney' index.html | wc -l)" -eq 1
+          test "$(grep -o 'const __finanzaLoginScreen=loginScreen' index.html | wc -l)" -eq 1
           grep -q 'Moneda de preferencia' index.html
           grep -q 'Cuotas y responsabilidades se gestionan desde Pagos' index.html
-          test "$(grep -o 'const __finanzaLoginScreen=loginScreen' index.html | wc -l)" -eq 1
           python - <<'PY'
           import re
           from pathlib import Path
