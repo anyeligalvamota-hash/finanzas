@@ -506,7 +506,7 @@ function saveNotif(){let enabled=$('s_not').checked;db.profile.notifications=ena
 async function bootFinal(){ensurePersonalLogin();let sess=localStorage.getItem('ag_session');if(sess){let users=getUsers(),u=users[sess.toLowerCase()];if(u){let x=loadDb(u.username);if(x){user={username:u.username,email:u.email,birthdate:u.birthdate,passwordHash:u.passwordHash,recoveryHash:u.recoveryHash};db=ensureSchema(x);openApp();return}}}loginMode='login';loginScreen();recoverLegacy()}
 try{let initial=normalizePage(history.state?.finanzaPage||decodeURIComponent((location.hash||'').replace(/^#/,'')||'Resumen'));page=initial;history.replaceState({finanzaPage:initial},'',location.pathname+'#'+encodeURIComponent(initial))}catch(e){} bootFinal();setTimeout(()=>{if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})},1200);setTimeout(handleResetLink,350);window.addEventListener('online',()=>syncRemote(false));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&user)syncRemote(false)});window.addEventListener('storage',e=>{if(user&&e.key===keyDb(user.username)&&e.newValue){try{db=ensureSchema(JSON.parse(e.newValue));render()}catch(_){}}});window.addEventListener('resize',()=>{if(page==='Resumen'){renderDashboardCharts();renderDebtChart()}});
 
-<script id="finanza-requested-js">
+
 /* Histórico de presupuesto: se conserva un snapshot mensual. Los meses sin snapshot muestran 0 asignado. */
 function finanzaMonthKey(offset){let d=new Date();d.setDate(1);d.setMonth(d.getMonth()+offset);return d.toISOString().slice(0,7)}
 function finanzaMonthLabel(key){let d=new Date(key+'-01T00:00:00');return d.toLocaleDateString(db?.language||'es',{month:'short'}).replace('.','')}
@@ -524,5 +524,4 @@ const __finanzaLoginScreen=loginScreen;window.loginScreen=function(){__finanzaLo
 const __finanzaCreateAccount=createAccount;window.createAccount=async function(){await __finanzaCreateAccount();if(user&&db){let c=document.getElementById('lg_currency')?.value||db.baseCurrency||'EUR';db.preferredCurrency=c;db.baseCurrency=c;db.budgetCurrency=c;db.expenseSummaryCurrency=c;db.profile.preferredCurrency=c;save()}}
 /* Guarda un snapshot al entrar a Presupuesto para que el mes actual quede registrado. */
 const __finanzaGo=go;window.go=function(p,push=true){__finanzaGo(p,push);if(normalizePage(p)==='Presupuesto'&&db){saveBudgetHistorySnapshot();localStorage.setItem(keyDb(user.username),JSON.stringify(db))}}
-</script>
 </script></body></html>
