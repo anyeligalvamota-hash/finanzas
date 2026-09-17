@@ -3,8 +3,6 @@ import re
 
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
-
-# Replace previous V7 patch if the workflow is re-run.
 s = re.sub(r'<style id="finanza-v7-css">.*?</style>\s*', '', s, flags=re.S)
 s = re.sub(r'<script id="finanza-v7-js">.*?</script>\s*', '', s, flags=re.S)
 
@@ -15,7 +13,6 @@ body .nav i{font-size:20px!important}.floating{font-size:28px!important}.avatar{
 .nav button.finanza-debt-nav{gap:10px}
 .finanza-delete-debt{background:#ead8d2!important;color:var(--espresso,#4A342A)!important;border:0!important;border-radius:10px!important;padding:8px 12px!important;cursor:pointer!important;font-weight:800!important;margin-left:7px!important}
 .finanza-modal-delete{background:#ead8d2!important;color:#4A342A!important}
-.finanza-debt-actions{display:flex!important;align-items:center!important;gap:7px!important;flex-wrap:wrap!important}
 .top .hello.finanza-hide-duplicate-user{display:none!important}
 @media(max-width:650px){.nav button.finanza-debt-nav{font-size:14px!important}.nav button.finanza-debt-nav span{font-size:14px!important}.finanza-delete-debt{padding:7px 10px!important}}
 </style>'''
@@ -58,6 +55,13 @@ js = r'''<script id="finanza-v7-js">
       wrapped.__finanzaV7=true;wrapped.__finanzaV7Original=orig;window[name]=wrapped;
     });
   }
+  function wrapRender(){
+    const fn=window.render;
+    if(typeof fn!=='function'||fn.__finanzaV7)return;
+    const orig=fn;
+    const wrapped=function(){const r=orig.apply(this,arguments);setTimeout(enhance,80);return r};
+    wrapped.__finanzaV7=true;wrapped.__finanzaV7Original=orig;window.render=wrapped;
+  }
   function nav(){
     document.querySelectorAll('.nav button').forEach(b=>{
       const t=(b.innerText||'').replace(/\s+/g,' ').trim().toLowerCase();
@@ -85,7 +89,7 @@ js = r'''<script id="finanza-v7-js">
       (btn.parentElement||parent).appendChild(del);
     });
   }
-  function enhance(){nav();uniqueUser();wrapDebtEditor();debtRows()}
+  function enhance(){nav();uniqueUser();wrapRender();wrapDebtEditor();debtRows()}
   setTimeout(enhance,450);setTimeout(enhance,1200);setTimeout(enhance,2200);
 })();
 </script>'''
