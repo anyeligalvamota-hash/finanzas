@@ -14,6 +14,10 @@ body .nav i{font-size:20px!important}.floating{font-size:28px!important}.avatar{
 .finanza-delete-debt{background:#ead8d2!important;color:var(--espresso,#4A342A)!important;border:0!important;border-radius:10px!important;padding:8px 12px!important;cursor:pointer!important;font-weight:800!important;margin-left:7px!important}
 .finanza-modal-delete{background:#ead8d2!important;color:#4A342A!important}
 .top .hello.finanza-hide-duplicate-user{display:none!important}
+.side .finanza-duplicate-side-user{display:none!important}
+.side .finanza-side-user{margin:2px 8px 16px!important}
+.side .nav{margin-top:0!important}
+.finanza-top-date-hidden,.finanza-top-motto-hidden{display:none!important}
 @media(max-width:650px){.nav button.finanza-debt-nav{font-size:14px!important}.nav button.finanza-debt-nav span{font-size:14px!important}.finanza-delete-debt{padding:7px 10px!important}}
 </style>'''
 
@@ -72,8 +76,19 @@ js = r'''<script id="finanza-v7-js">
   }
   function uniqueUser(){
     const top=document.querySelector('.top .hello');
-    const side=document.querySelector('#finanzaSideUser,.side .finanza-side-user');
-    if(top&&side)top.classList.add('finanza-hide-duplicate-user');
+    const sideUser=document.querySelector('#finanzaSideUser,.side .finanza-side-user');
+    if(top&&sideUser)top.classList.add('finanza-hide-duplicate-user');
+    const candidates=[...document.querySelectorAll('.side > *')].filter(el=>el!==sideUser && /mi\s+espacio/i.test((el.innerText||el.textContent||'').trim()));
+    candidates.forEach(el=>el.classList.add('finanza-duplicate-side-user'));
+  }
+  function cleanTop(){
+    const top=document.querySelector('.top');if(!top)return;
+    top.querySelectorAll('*').forEach(el=>{
+      const t=(el.textContent||'').replace(/\s+/g,' ').trim();
+      if(!t)return;
+      if(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo),?\s+\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+\d{4}$/i.test(t))el.classList.add('finanza-top-date-hidden');
+      if(/pequeñas\s+decisiones,?\s*grandes\s+resultados\.?/i.test(t) && el.children.length<=1)el.classList.add('finanza-top-motto-hidden');
+    });
   }
   function debtRows(){
     const root=document.getElementById('content')||document.body;
@@ -89,7 +104,7 @@ js = r'''<script id="finanza-v7-js">
       (btn.parentElement||parent).appendChild(del);
     });
   }
-  function enhance(){nav();uniqueUser();wrapRender();wrapDebtEditor();debtRows()}
+  function enhance(){nav();uniqueUser();cleanTop();wrapRender();wrapDebtEditor();debtRows()}
   setTimeout(enhance,450);setTimeout(enhance,1200);setTimeout(enhance,2200);
 })();
 </script>'''
