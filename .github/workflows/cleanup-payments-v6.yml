@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/scripts/cleanup_payments_v6.py'
+      - '.github/workflows/cleanup-payments-v6.yml'
 
 jobs:
   cleanup:
@@ -18,14 +19,16 @@ jobs:
       - name: Validate HTML and JavaScript
         run: |
           test -s index.html
-          node --check <(python - <<'PY'
+          python - <<'PY'
           import re
           from pathlib import Path
           s=Path('index.html').read_text(encoding='utf-8')
-          for m in re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S):
-              print(m)
+          scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts):
+              Path(f'/tmp/finanza-script-{i}.js').write_text(code,encoding='utf-8')
+          print(f'Validated extraction of {len(scripts)} scripts')
           PY
-          )
+          for f in /tmp/finanza-script-*.js; do node --check "$f"; done
       - name: Verify one payment manager path
         run: |
           if grep -q 'finanzaPaymentManagerV2\|finanzaUnifiedPayments\|paymentsOnlyOnPage' index.html; then
