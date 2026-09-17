@@ -1,0 +1,43 @@
+name: Apply Finanza V8
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/apply_finanza_v8.py'
+      - '.github/workflows/apply-finanza-v8.yml'
+      - 'logo.svg'
+      - 'icon.svg'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V8 patch
+        run: python .github/scripts/apply_finanza_v8.py
+      - name: Validate JavaScript
+        run: |
+          test -s index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S)
+          for i,code in enumerate(scripts):
+              Path(f'/tmp/finanza-script-{i}.js').write_text(code,encoding='utf-8')
+          print(f'Extracted {len(scripts)} scripts')
+          PY
+          for f in /tmp/finanza-script-*.js; do node --check "$f"; done
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Integrar nuevo logo y corregir presupuesto móvil'
+            git push
+          fi
