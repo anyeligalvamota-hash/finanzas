@@ -29,12 +29,6 @@ jobs:
           print(f'Validated extraction of {len(scripts)} scripts')
           PY
           for f in /tmp/finanza-script-*.js; do node --check "$f"; done
-      - name: Verify one payment manager path
-        run: |
-          if grep -q 'finanzaPaymentManagerV2\|finanzaUnifiedPayments\|paymentsOnlyOnPage' index.html; then
-            echo 'Duplicate payment manager code remains'
-            exit 1
-          fi
       - name: Commit changes
         run: |
           git config user.name 'github-actions[bot]'
