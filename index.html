@@ -314,8 +314,18 @@ html,body{background:var(--linen)!important;color:var(--espresso)!important}body
 .finanza-history-shell{height:310px!important;min-height:310px!important}.finanza-history-shell canvas{height:280px!important;max-height:280px!important}.finanza-debt-shell{height:300px!important;min-height:300px!important}.finanza-debt-shell canvas{height:230px!important;max-height:230px!important}
 @media(max-width:650px){.top .brand-inline{display:none!important}.top{min-height:34px!important}.finanza-page-cuentas .card,.finanza-page-cuentas .panel{padding:10px!important}.finanza-payment-row{align-items:flex-start}.finanza-payment-actions{flex-wrap:wrap;justify-content:flex-end}.finanza-history-shell{height:290px!important;min-height:290px!important}.finanza-history-shell canvas{height:255px!important;max-height:255px!important}.finanza-debt-shell{height:285px!important;min-height:285px!important}}
 </style><style id="finanza-v5-2-css">
-@media(max-width:650px){.top .brand-inline,.top .logo,.top .brandmark{display:none!important}.top .hello{display:none!important}.floating{display:grid!important;place-items:center;font-size:0!important}.floating::before{content:'+';font-size:32px;line-height:1;font-weight:400}}
-.finanza-top-user-hidden{display:none!important}.finanza-side-user{display:flex;align-items:center;gap:9px;margin:2px 8px 16px;padding:10px;border-radius:14px;background:var(--blush);border:1px solid var(--line)}.finanza-side-user .avatar{width:34px;height:34px;flex:none}.finanza-side-user strong{display:block;font-size:12px}.finanza-side-user small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+/* Performance-safe navigation cleanup: no global DOM observers. */
+@media(max-width:650px){
+  .top .brand-inline,.top .logo,.top .brandmark{display:none!important}
+  .top .hello{display:none!important}
+  .floating{display:grid!important;place-items:center;font-size:0!important}
+  .floating::before{content:'+';font-size:32px;line-height:1;font-weight:400}
+}
+.finanza-top-user-hidden{display:none!important}
+.finanza-side-user{display:flex;align-items:center;gap:9px;margin:2px 8px 16px;padding:10px;border-radius:14px;background:var(--blush);border:1px solid var(--line)}
+.finanza-side-user .avatar{width:34px;height:34px;flex:none}
+.finanza-side-user strong{display:block;font-size:12px}
+.finanza-side-user small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
 </style></head><body>
 <div id="login" class="login"></div><div id="app" class="app" style="display:none"><div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleDrawer(false)"></div><aside class="side" id="sideDrawer"><button class="drawer-close" onclick="toggleDrawer(false)" aria-label="Cerrar menú"></button><div class="logo"><img class="brandmark" src="icon.svg" alt="Finanza"><div><strong>Finanza</strong><small>Tu vida en equilibrio</small></div></div><nav id="nav" class="nav"></nav><div class="sync-strip"><span class="sync-status" id="syncStatus"><span class="dot"></span>Sincronizado</span><button class="btn small ghost" onclick="syncRemote(true)">↻</button></div><div class="drawer-footer"><button class="drawer-logout" onclick="logout();toggleDrawer(false)"><span class="icon-slot"></span> Cerrar sesión</button></div></aside><main class="main"><header class="top"><div class="top-left"><button class="menu-trigger" onclick="toggleDrawer(true)" aria-label="Abrir menú"></button><div class="top-search"><span>⌕</span><input placeholder="Buscar movimientos, cuentas, pagos…" aria-label="Buscar"></div><div class="page-heading"><div class="summary-mobile-brand"><img src="icon.svg" alt="Finanza"><div><b>FINANZA</b><span>Tu vida en equilibrio</span></div></div><h1 id="pageTitle">Resumen</h1><p id="pageSub">Tu dinero, deudas y objetivos en un solo lugar.</p></div></div><div class="top-date">Martes, 15 de septiembre de 2026</div><div class="hello"><button class="btn" onclick="toggleInbox()" aria-label="Notificaciones"></button><div class="avatar" id="avatar">A</div><div><b id="userName">Anyeli</b><div class="muted">Mi espacio</div></div></div></header><section id="content"></section></main><nav id="primaryBottom" class="primary-bottom" aria-label="Navegación principal"><button data-page="Resumen" onclick="go('Resumen')"><i></i><span>Resumen</span></button><button data-page="Movimientos" onclick="go('Movimientos')"><i></i><span>Movimientos</span></button><button data-page="Cuentas" onclick="go('Cuentas')"><i></i><span>Cuentas</span></button><button data-page="Deudas" onclick="go('Deudas')"><i></i><span>Deudas</span></button><button data-page="Ahorro" onclick="go('Ahorro')"><i></i><span>Ahorro</span></button></nav></div><button class="floating" onclick="openQuick()" aria-label="Agregar"></button><div id="inbox" class="inbox"></div><div id="modalBack" class="modal-back" onclick="if(event.target===this)closeModal()"><div id="modal" class="modal"></div></div>
 <script>
@@ -697,6 +707,43 @@ function drawHistoryV5(){const c=document.getElementById('finanzaBudgetChart');i
 function floatingPlus(){const b=document.querySelector('.floating');if(b){b.textContent='';b.setAttribute('aria-label','Añadir');}}
 function enhance(){try{setPageClass();hideRequestedText();moveUserToSide();cleanTop();fixMenus();paymentsOnlyOnPage();drawDebtV5();drawHistoryV5();floatingPlus()}catch(e){console.warn('Finanza V5',e)}}
 const oldRender=window.render;if(typeof oldRender==='function'&&!oldRender.__finanzaV5){const r=oldRender;window.render=function(){const z=r.apply(this,arguments);setTimeout(enhance,70);return z};window.render.__finanzaV5=true}
-new MutationObserver(()=>{clearTimeout(window.__finanzaV5Timer);window.__finanzaV5Timer=setTimeout(enhance,90)}).observe(document.body,{childList:true,subtree:true});window.addEventListener('resize',()=>{clearTimeout(window.__finanzaV5Resize);window.__finanzaV5Resize=setTimeout(()=>{drawHistoryV5();drawDebtV5()},120)});setTimeout(enhance,500);
+window.addEventListener('resize',()=>{clearTimeout(window.__finanzaV5Resize);window.__finanzaV5Resize=setTimeout(()=>{drawHistoryV5();drawDebtV5()},120)});setTimeout(enhance,500);
 })();
-</script><script id="finanza-v5-2-js">(function(){function f(){try{const top=document.querySelector('.top');if(top){const h=top.querySelector('.hello');if(h){h.classList.add('finanza-top-user-hidden');const side=document.querySelector('.side');if(side&&!document.getElementById('finanzaSideUser')){const u=document.createElement('div');u.id='finanzaSideUser';u.className='finanza-side-user';const av=h.querySelector('.avatar');const name=(h.innerText||'').trim().split(/\n/)[0]||'Mi espacio';u.innerHTML=(av?av.outerHTML:'<div class="avatar">A</div>')+'<div><strong>'+name.replace(/[<>]/g,'')+'</strong><small>Mi espacio</small></div>';const nav=side.querySelector('.nav');if(nav)side.insertBefore(u,nav)}}}document.querySelectorAll('.bottom-nav button,.mobile-nav button').forEach(e=>{const t=(e.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();if(t==='deudas' || t.includes('deudas presupuesto'))e.innerHTML='<i aria-hidden="true">▥</i><span>Presupuesto</span>'});document.querySelectorAll('.side .nav button,.side .nav a').forEach(e=>{const t=(e.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();if(t.includes('deudas'))e.innerHTML='<i aria-hidden="true">▣</i><span>Deudas</span>'});}catch(e){console.warn('Finanza V5.2',e)}}setTimeout(f,250);})();</script></body></html>
+</script><script id="finanza-v5-2-js">
+(function(){
+  function text(el){return (el.textContent||'').replace(/\s+/g,' ').trim().toLowerCase()}
+  function f(){
+    try{
+      const top=document.querySelector('.top');
+      const side=document.querySelector('.side');
+      if(top){
+        const h=top.querySelector('.hello');
+        if(h){
+          h.classList.add('finanza-top-user-hidden');
+          if(side&&!document.getElementById('finanzaSideUser')){
+            const u=document.createElement('div');
+            u.id='finanzaSideUser';u.className='finanza-side-user';
+            const av=h.querySelector('.avatar');
+            const name=(h.querySelector('#userName')?.textContent||h.innerText||'Mi espacio').trim().split(/\n/)[0]||'Mi espacio';
+            u.innerHTML=(av?av.outerHTML:'<div class="avatar">A</div>')+'<div><strong>'+name.replace(/[<>]/g,'')+'</strong><small>Mi espacio</small></div>';
+            const nav=side.querySelector('.nav');if(nav)side.insertBefore(u,nav);else side.appendChild(u);
+          }
+        }
+      }
+      document.querySelectorAll('.primary-bottom button,.bottom-nav button,.mobile-nav button').forEach(e=>{
+        const t=text(e);
+        if(t==='deudas'||t.includes('deudas presupuesto')){
+          e.innerHTML='<i aria-hidden="true">▥</i><span>Presupuesto</span>';
+          e.setAttribute('aria-label','Presupuesto');
+        }
+      });
+      document.querySelectorAll('.side .nav button,.side .nav a').forEach(e=>{
+        if(text(e).includes('deudas'))e.innerHTML='<i aria-hidden="true">▣</i><span>Deudas</span>';
+      });
+    }catch(e){console.warn('Finanza V5.2',e)}
+  }
+  // Run after initial DOM creation. Navigation is already covered by the render wrappers in V4/V5.
+  setTimeout(f,250);
+  setTimeout(f,900);
+})();
+</script></body></html>
