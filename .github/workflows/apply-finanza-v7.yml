@@ -42,3 +42,4 @@ jobs:
             git commit -m 'Mejorar gestion de deudas y tipografia'
             git push
           fi
+# trigger V7 after the dynamic debt refresh adjustment
