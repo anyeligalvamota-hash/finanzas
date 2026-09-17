@@ -2,9 +2,8 @@ name: Apply Finanza V7
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '.github/scripts/apply_finanza_v7.py'
-      - '.github/workflows/apply-finanza-v7.yml'
+    branches:
+      - main
 
 jobs:
   apply:
@@ -42,4 +41,3 @@ jobs:
             git commit -m 'Mejorar gestion de deudas y tipografia'
             git push
           fi
-# trigger V7 after the dynamic debt refresh adjustment
