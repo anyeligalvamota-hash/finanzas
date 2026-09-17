@@ -1,0 +1,39 @@
+name: Apply Finanza V5 fixes
+on:
+  push:
+    paths:
+      - '.github/scripts/apply_finanza_v5.py'
+      - '.github/workflows/apply-finanza-v5.yml'
+      - 'FINANZA_V5_TRIGGER.txt'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V5 fixes
+        run: python .github/scripts/apply_finanza_v5.py
+      - name: Validate
+        run: |
+          test -s index.html
+          test "$(grep -o 'id=\"finanza-v5-css\"' index.html | wc -l)" -eq 1
+          test "$(grep -o 'id=\"finanza-v5-js\"' index.html | wc -l)" -eq 1
+          grep -q "Responsabilidades de pago" index.html
+          grep -q "finanzaEditPaymentV5" index.html
+          grep -q "finanzaDeletePaymentV5" index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S)
+          Path('/tmp/finanza-app.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/finanza-app.js
+      - name: Commit updated app
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Aplicar correcciones V5 de navegación y diseño'
+          git push
