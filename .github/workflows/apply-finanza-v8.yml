@@ -41,3 +41,4 @@ jobs:
             git commit -m 'Integrar nuevo logo y corregir presupuesto móvil'
             git push
           fi
+# retrigger V8 after logo and navigation updates
