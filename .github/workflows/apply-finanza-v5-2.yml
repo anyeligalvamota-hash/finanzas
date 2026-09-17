@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - '.github/scripts/apply_finanza_v5_2.py'
+      - '.github/workflows/apply-finanza-v5-2.yml'
 permissions:
   contents: write
 jobs:
