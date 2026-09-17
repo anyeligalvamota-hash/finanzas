@@ -1,0 +1,45 @@
+name: Cleanup Payments V6
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/scripts/cleanup_payments_v6.py'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clean duplicated payment sections
+        run: python .github/scripts/cleanup_payments_v6.py
+      - name: Validate HTML and JavaScript
+        run: |
+          test -s index.html
+          node --check <(python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          for m in re.findall(r'<script(?:[^>]*)>(.*?)</script>',s,re.S):
+              print(m)
+          PY
+          )
+      - name: Verify one payment manager path
+        run: |
+          if grep -q 'finanzaPaymentManagerV2\|finanzaUnifiedPayments\|paymentsOnlyOnPage' index.html; then
+            echo 'Duplicate payment manager code remains'
+            exit 1
+          fi
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Dejar un solo apartado de Pagos'
+            git push
+          fi
