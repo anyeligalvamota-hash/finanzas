@@ -1,0 +1,17 @@
+name: Inspect Source Temp
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-source-temp.yml'
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: finanza-source-temp
+          path: index.html
