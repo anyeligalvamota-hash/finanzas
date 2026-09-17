@@ -1,9 +1,6 @@
 name: Apply Finanza V7
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   apply:
@@ -27,18 +24,9 @@ jobs:
           print(f'Extracted {len(scripts)} scripts')
           PY
           for f in /tmp/finanza-script-*.js; do node --check "$f"; done
-      - name: Remove temporary inspection workflow
-        run: rm -f .github/workflows/inspect-source-temp.yml TEMP_SOURCE_COPY.txt
       - name: Commit changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          if [ -f .github/workflows/inspect-source-temp.yml ]; then git add .github/workflows/inspect-source-temp.yml; fi
-          if [ -f TEMP_SOURCE_COPY.txt ]; then git add TEMP_SOURCE_COPY.txt; fi
-          if git diff --cached --quiet; then
-            echo 'No changes to commit'
-          else
-            git commit -m 'Limpiar encabezado y duplicidad de usuario'
-            git push
-          fi
+          if git diff --cached --quiet; then echo 'No changes to commit'; else git commit -m 'Aplicar V7 manualmente'; git push; fi
